@@ -45,6 +45,7 @@ var makeBlinkyDancer = function(top, left, timeBetweenSteps){
 var BlinkyDancer = function(top, left, timeBetweenSteps){
   Dancer.call(this, top, left, timeBetweenSteps);
 };
+
 //Default to for failed lookups
 BlinkyDancer.prototype = Object.create(Dancer.prototype);
 BlinkyDancer.prototype.constructor = BlinkyDancer;

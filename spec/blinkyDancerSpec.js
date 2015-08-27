@@ -26,7 +26,7 @@ describe("blinkyDancer", function() {
       expect(blinkyDancer.step.callCount).to.be.equal(0);
       blinkyDancer = makeBlinkyDancer(10, 20, timeBetweenSteps);
       sinon.spy(blinkyDancer, "step");//
-      clock.tick(timeBetweenSteps - 1);
+      clock.tick(timeBetweenSteps - 1); 
       // clock.tick(timeBetweenSteps);
       // blinkyDancer.step();//
       // console.log(blinkyDancer.step.callCount);//

@@ -86,7 +86,7 @@ var Dancer = function(top, left, timeBetweenSteps){
 };
 Dancer.prototype.step = function(){
   var that = this;
-  setTimeout.call(that, function(){that.step();}, that.timeBetweenSteps);
+  setTimeout(function(){that.step();}, that.timeBetweenSteps);
 };
 Dancer.prototype.setPosition = function(top, left){
   var styleSettings = {
@@ -95,3 +95,4 @@ Dancer.prototype.setPosition = function(top, left){
   };
   this.$node.css(styleSettings);
 };
+
