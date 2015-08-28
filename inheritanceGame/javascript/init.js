@@ -62,6 +62,10 @@ $(document).ready(function(){
       window.players.push(player);
       player.$node["pid"] = window.players.length;
       if(window.players.length === 2) {
+        //Set opponenets
+        window.players[0].opponent = window.players[1];
+        window.players[1].opponent = window.players[0];
+        //Ready game
         window.playersReady = true;
         cssInitializer();
       }

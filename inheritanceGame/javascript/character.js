@@ -12,6 +12,7 @@ var Character  = function(top, left, timeBetweenSteps, img) {
   this.isSliding = false;
   this.direction = -1;
   this.isFiring = false;
+  this.hitTarget = false;
   //this.step();
   this.timeBetweenSteps = timeBetweenSteps;
   // health bar
@@ -51,7 +52,6 @@ Character.prototype.jump = function(mult){
   var that = this;
   if(!mult)
     mult = that.gravityMultipler;
-  console.log(that.isJumping);
   //If we're not jumping
   if(!that.isJumping){
     //Jump
@@ -113,28 +113,66 @@ Character.prototype.shoot = function(bullet) {
   var tempBullet = makeBullet("http://vignette4.wikia.nocookie.net/nintendo/images/f/fb/Bullet_Bill_(New_Super_Mario_Bros_Wii).png/revision/latest?cb=20120916120335&path-prefix=en",
     Number(this.$node.css("left").replace("px", "")),
     Number(this.$node.css("top").replace("px", "")),
-    this.direction);
+    this.direction, this.opponent);
 };
 
-var makeBullet = function(bullet, playerX, playerY, dir) {
-  return new Bullet(bullet, playerX, playerY, dir);
+var makeBullet = function(bullet, playerX, playerY, dir, opp) {
+  return new Bullet(bullet, playerX, playerY, dir, opp);
 }
 
-var Bullet = function(bullet, startX, startY, dir) {
+var Bullet = function(bullet, startX, startY, dir, opp) {
   this.nodeText = this.makeNodeText(bullet);
   this.startX = startX;
   this.startY = startY;
   this.$node = $(this.nodeText);
   this.direction = dir;
+  this.opponent = opp;
   this.fireBullet(1);
 };
+
+//Check for opponent impact
+Bullet.prototype.checkImpact = function(){
+  //Bullet
+  var bullLeft = Number(this.$node.css("left").replace("px", ""));
+  var bullRight = bullLeft + Number(this.$node.css("width").replace("px", ""));
+  var bullTop = Number(this.$node.css("top").replace("px", ""));
+  var bullBottom = bullTop + Number(this.$node.css("height").replace("px", ""));
+  //Opponent
+  var oppLeft = Number(this.opponent.$node.css("left").replace("px", ""));
+  var oppRight = oppLeft + Number(this.opponent.$node.css("width").replace("px", ""));
+  var oppTop = Number(this.opponent.$node.css("top").replace("px", ""));
+  var oppBottom = oppTop + Number(this.opponent.$node.css("height").replace("px", ""));
+  console.log(this.opponent);
+  //Impossible to collide
+  if(bullLeft > oppRight || bullRight < oppLeft) {
+    return false;
+  }
+  if(bullTop > oppBottom || bullBottom < oppTop){
+    return false;
+  }
+
+  //Possible to collide
+  if((bullLeft > oppLeft && bullLeft < oppRight
+    || bullRight > oppLeft && bullRight < oppRight)
+    && (bullTop > oppTop && bullTop < oppBottom
+      || bullBottom > oppTop && bullBottom < oppBottom)){
+    if(!this.hitTarget){
+      this.hitTarget = true;
+      this.updateHealthBar();
+      return true;
+    }
+  }
+  return false;
+};
+
 
 Bullet.prototype.makeNodeText = function(img) {
   var tempString = '<span class="bullet">';
   tempString += '<img src="' + img + '" height="25" width="25"/>';
   tempString += '</span>';
   return tempString;
-}
+};
+
 
 Bullet.prototype.fireBullet = function() {
   var that = this;
@@ -147,7 +185,8 @@ Bullet.prototype.fireBullet = function() {
   //If facing right
   if(this.direction === 1)
     that.$node.css({transform: "rotateY(180deg)"});
-
+  //Set impact interval
+  setInterval(function(){that.checkImpact();}, 50);
   $("body").append(this.$node);
   // animate once
   this.$node.animate({
@@ -155,5 +194,11 @@ Bullet.prototype.fireBullet = function() {
   }, 2000, function() {that.$node.remove();})
 
   // when 100px off screen, remove
-}
+};
+
+
+Bullet.prototype.updateHealthBar = function() {
+  this.opponent.healthBar -= 20;
+  this.opponent.$node.find(".healthBar").css({"width": this.opponent.healthBar / 100});
+};
 
