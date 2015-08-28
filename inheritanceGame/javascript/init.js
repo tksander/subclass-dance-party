@@ -1,38 +1,45 @@
 $(document).ready(function(){
+
   window.dancers = [];
   window.mapImages = [];
   window.mapImageIndex = -1;
+
+  //Game state bools
+  window.playing = true;
+  window.playersReady = false;
+
   //Create player 1 and append
   window.player1 = $("");
   $("body").append(player1);
+  window.players = [];
 
   $(".addDancerButton").on("click", function(event){
-    /* This function sets up the click handlers for the create-dancer
-     * buttons on dancefloor.html. You should only need to make one small change to it.
-     * As long as the "data-dancer-maker-function-name" attribute of a
-     * class="addDancerButton" DOM node matches one of the names of the
-     * maker functions available in the global scope, clicking that node
-     * will call the function to make the dancer.
-     */
+      /* This function sets up the click handlers for the create-dancer
+       * buttons on dancefloor.html. You should only need to make one small change to it.
+       * As long as the "data-dancer-maker-function-name" attribute of a
+       * class="addDancerButton" DOM node matches one of the names of the
+       * maker functions available in the global scope, clicking that node
+       * will call the function to make the dancer.
+       */
 
-    /* dancerMakerFunctionName is a string which must match
-     * one of the dancer maker functions available in global scope.
-     * A new object of the given type will be created and added
-     * to the stage.
-     */
-    var dancerMakerFunctionName = $(this).data("dancer-maker-function-name");
+      /* dancerMakerFunctionName is a string which must match
+       * one of the dancer maker functions available in global scope.
+       * A new object of the given type will be created and added
+       * to the stage.
+       */
+      var dancerMakerFunctionName = $(this).data("dancer-maker-function-name");
 
-    // get the maker function for the kind of dancer we're supposed to make
-    var dancerMakerFunction = window[dancerMakerFunctionName];
-    // make a dancer with a random position
+      // get the maker function for the kind of dancer we're supposed to make
+      var dancerMakerFunction = window[dancerMakerFunctionName];
+      // make a dancer with a random position
 
-    var dancer = dancerMakerFunction(
-      $("body").height() * Math.random(),
-      $("body").width() * Math.random(),
-      Math.random() * 1000
-    );
-    $('body').append(dancer.$node);
-    window.dancers.push(dancer.$node);
+      var dancer = dancerMakerFunction(
+        $("body").height() * Math.random(),
+        $("body").width() * Math.random(),
+        Math.random() * 1000
+      );
+      $('body').append(dancer.$node);
+      window.dancers.push(dancer.$node);
   });
   
   $(".lineupDancers").on("click", function(event) {
@@ -43,13 +50,22 @@ $(document).ready(function(){
   });
 
   $(".changeCharacter").on("click", function(event){
-    var charMakerFunctionName = $(this).data("character-maker-function-name");
-    var charMakerFunction = window[charMakerFunctionName];
-    var player = charMakerFunction(
-      $(window).height() - 200,
-      500,
-      100);
-    $("body").append(player.$node);
+    //If we dont have 2 players
+    if(window.players.length < 2){
+      var charMakerFunctionName = $(this).data("character-maker-function-name");
+      var charMakerFunction = window[charMakerFunctionName];
+      var player = charMakerFunction(
+        $(window).height() - 200,
+        500,
+        100);
+      $("body").append(player.$node);
+      window.players.push(player);
+      player.$node["pid"] = window.players.length;
+      if(window.players.length === 2) {
+        window.playersReady = true;
+        cssInitializer();
+      }
+    }
   });
 
   (function(){
@@ -69,5 +85,79 @@ $(document).ready(function(){
     window.mapImageIndex++;
     $("body").css("background-image", "url(" + window.mapImages[window.mapImageIndex % window.mapImages.length] + ")");
   });
+
+  //Check for key inputs
+  var keys = {};
+  document.onkeydown = function(e){
+    keys[e.which] = true;
+  };
+  document.onkeyup = function(e){
+    delete keys[e.which];
+  };
+
+   //Game loop
+  function gameLoop(){
+    // Start game when players are ready
+    if(window.playersReady === true) {
+
+      //Player 1 controls
+      //If up arrow
+      if(keys[87]){
+        window.players[0].jump();
+      }
+      //If down arrow
+
+      //If left arrow
+      if(keys[65]){
+        window.players[0].slide(-1);
+      }
+      if(keys[68]){
+        window.players[0].slide(1);
+      }
+      //If left command
+      if(keys[91]){
+        window.players[0].shoot(/*replace me*/);
+        delete keys[91];
+      }
+
+
+      //Player 2 controls
+      //If up arrow
+      if(keys[38]){
+        window.players[1].jump();
+      }
+      //If down arrow
+      //If left arrow
+      if(keys[37]){
+        window.players[1].slide(-1);
+      }
+      //If right arrow
+      if(keys[39]){
+        window.players[1].slide(1);
+      }
+      //If right command
+      if(keys[93]){
+        window.players[1].shoot(/*replace me*/);
+        delete keys[93];
+      }
+    }
+    setTimeout(gameLoop, 50);
+  };
+  gameLoop();
 });
+
+
+function cssInitializer() {
+  $(".healthBar").css({
+    position: "relative",
+    width: "60%",
+    margin: "0 auto",
+    top: -180,
+    // width: Number($(window)./*css("width").replace("px", "")*/width()) * .05,
+    height: Number($(window)./*css("height").replace("px", "")*/height()) * .025,
+    "background-color": "red",
+    opacity: 0.5,
+    "border-radius": "15%"
+  });
+};
 
